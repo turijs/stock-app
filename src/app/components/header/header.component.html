@@ -1,0 +1,17 @@
+<mat-toolbar>
+  <h1>Stocks</h1>
+
+  <div class="header__flex-space"></div>
+
+  <div *ngIf="auth.isLoggedIn" class="header__data">
+    Data last updated: 1/4/20
+  </div>
+
+  <div class="header__flex-space"></div>
+
+  <div *ngIf="auth.isLoggedIn" class="header__user">
+    <mat-icon aria-hidden="false" aria-label="User icon">account_circle</mat-icon>
+    <div class="header__username">{{ auth.username }}</div>
+    <button mat-flat-button color="accent" (click)="auth.logout()">Logout</button>
+  </div>
+</mat-toolbar>

@@ -1,0 +1,17 @@
+
+.header__data {
+  font-size: 11pt;
+  font-weight: normal;
+}
+
+.header__flex-space { flex: 1 1 auto; }
+
+.header__user { 
+  display: flex;
+  align-items: center;
+}
+
+.header__username {
+  font-weight: normal;
+  margin-right: 20px;
+}
