@@ -1,1 +1,28 @@
-<p>main works!</p>
+<div class="display-options">
+  <mat-form-field>
+    <mat-select [formControl]="ticker">
+      <mat-option *ngFor="let t of tickers" [value]="t">
+        {{t}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-radio-group [formControl]="chartType" aria-label="Select a chart type">
+    <mat-radio-button value="ohlc">OHLC</mat-radio-button>
+    <mat-radio-button style="margin-left: 20px" value="candlestick">Candlestick</mat-radio-button>
+  </mat-radio-group>
+</div>
+
+<highcharts-chart 
+  [Highcharts]="Highcharts"
+  [options]="options"
+  [(update)]="updateChart"
+  [oneToOne]=true
+  [constructorType]="'stockChart'"
+  [callbackFunction]="saveChartInstance"
+
+
+  style="width: 100%; height: 600px; display: block;"
+></highcharts-chart>
+
+<button (click)="updateOptions()">Update Options</button>

@@ -1,10 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 
 export interface User {
   username: string,
   password: string,
   apiKey: string
+}
+
+export enum LoginEventTypes {
+  Login,
+  Logout
 }
 
 @Injectable({
@@ -13,6 +19,7 @@ export interface User {
 export class AuthService {
   users: User[]
   currentUser: User | null
+  loginEvents: Subject<LoginEventTypes> = new Subject();
 
   constructor(private router: Router) {
     this.users = JSON.parse(window.localStorage.getItem('users')) || [];
@@ -41,6 +48,7 @@ export class AuthService {
 
     this.currentUser = user;
     this.persist();
+    this.loginEvents.next(LoginEventTypes.Login);
 
     return true;
   }
@@ -48,6 +56,7 @@ export class AuthService {
   logout() {
     this.currentUser = null;
     this.persist();
+    this.loginEvents.next(LoginEventTypes.Logout);
     this.router.navigate(['/auth']);
   }
 
