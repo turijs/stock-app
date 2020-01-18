@@ -81,6 +81,7 @@ export class DataService {
     this.updateProgress(0);
 
     const processResponse = (ticker: string, res: any) => {
+      if (!this.auth.isLoggedIn) return; // user can log out during update
       if (tickerIndex < TICKERS.length) processNext();
       
       this.byTicker[ticker] = this.processRawData(res);
@@ -158,6 +159,8 @@ export class DataService {
 
     // simulate network delay with timeouts
     const updateNext = () => {
+      if (!this.auth.isLoggedIn) return;
+
       const ticker = TICKERS[tickerIndex];
       const tickerData = this.byTicker[ticker];
 
