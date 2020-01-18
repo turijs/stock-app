@@ -1,6 +1,6 @@
 <mat-tab-group mat-align-tabs="center" backgroundColor="accent">
   <mat-tab label="Login">
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+    <form class="container" [formGroup]="loginForm" (ngSubmit)="onLogin()">
       <mat-form-field>
         <input matInput formControlName="username" placeholder="Username*">
       </mat-form-field>
@@ -15,7 +15,7 @@
   </mat-tab>
 
   <mat-tab label="Sign Up">
-    <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+    <form class="container" [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
       <mat-form-field>
         <input matInput formControlName="username" placeholder="Username*">
       </mat-form-field>

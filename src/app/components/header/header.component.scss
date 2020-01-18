@@ -1,7 +1,10 @@
+:host { display: block; }
 
 .header__data {
   font-size: 11pt;
   font-weight: normal;
+  display: flex;
+  align-items: center;
 }
 
 .header__flex-space { flex: 1 1 auto; }

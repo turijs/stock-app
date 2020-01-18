@@ -1,17 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import * as Highcharts from 'highcharts/highstock';
-import { DataService, movingAveragePeriods } from 'src/app/services/data.service';
-import { AuthService } from 'src/app/services/auth.service';
+import { DataService, MOVING_AVERAGE_PERIODS } from 'src/app/services/data.service';
 import {TICKERS} from 'src/app/services/data.service';
 import { FormControl } from '@angular/forms';
-import { filter } from 'rxjs/operators';
-
-const groupingUnits = [
-  ['week', [1]], 
-  ['month', [1, 2, 3, 4, 6]]
-];
-
-const numFormatter = new Intl.NumberFormat('en-US', {maximumFractionDigits: 3});
+import { EventsService } from 'src/app/services/events.service';
+import { round } from 'src/app/util';
+import { exec } from 'child_process';
 
 @Component({
   selector: 'app-main',
@@ -32,6 +26,19 @@ export class MainComponent implements OnInit {
 
   options: any = {
     title: { text: 'Loading', margin: 60 },
+    xAxis: {
+      dateTimeLabelFormats: {
+        millisecond: '%H:%M:%S.%L',
+        second: '%H:%M:%S',
+        minute: '%H:%M',
+        hour: '%H:%M',
+        day: '%m/%d/%y',
+        week: '%m/%d/%y',
+        month: '%m/%y',
+        year: '\'%y'
+      },
+      maxPadding: 1
+    },
     yAxis: [
       {
         labels: {
@@ -41,7 +48,7 @@ export class MainComponent implements OnInit {
         title: { text: this.chartTypes[this.chartType.value] },
         height: '60%',
         lineWidth: 2,
-        resize: { enabled: true }
+        offset: 120
       }, 
       {
         labels: {
@@ -51,107 +58,132 @@ export class MainComponent implements OnInit {
         title: { text: 'Volume' },
         top: '65%',
         height: '35%',
-        offset: 0,
+        offset: 120,
         lineWidth: 2
       }
     ],
     tooltip: {
-      split: true
+      split: true,
+      headerFormat: '',
+      // xDateFormat: '%Y-%m-%d', // this doesn't correctly control the date format when zoomed out to a year
+      positioner: function(boxWidth, boxHeight, point) {
+        let yOffset = 0;
+        if (point.series.name === 'Vol') {
+          yOffset = 220;          
+        }
+
+        return {x: point.plotX + 20, y: point.plotY + yOffset};         
+      }
     },
     rangeSelector: {
       selected: 0,
       buttons: [
-        { type: 'week', count: 1, text: '1w' }, 
-        { type: 'month', count: 1, text: '1m' }, 
+        { type: 'week', count: 1, text: '1w' },
+        { type: 'month', count: 1, text: '1m' },
         { type: 'month', count: 3, text: '3m' },
         { type: 'month', count: 6, text: '6m' },
         { type: 'ytd', text: 'YTD' },
         { type: 'year', count: 1, text: '1y' },
         { type: 'all', text: 'All' }
       ],
-      floating: false
+      inputDateFormat: '%m/%d/%y',
+      inputEditDateFormat: '%m/%d/%y'
     },
     legend: {
       enabled: true,
       verticalAlign: 'top',
       y: -40
-      // floating: true
     },
-    // chart: { spacingTop: 100 },
     series: [
       {
         name: '',
         type: this.chartType.value,
         data: [],
-        dataGrouping: { units: groupingUnits },
         tooltip: {
           pointFormatter: function() {
-            return `<span style="color:${this.color}">● </span> <b>${this.series.name}</b><br>`
+            return `<span style="color:${this.color}">● </span> <b>${this.series.name}</b> `
+                 + `(${Highcharts.dateFormat('%m/%d/%y', this.x)})` + '<br>'
                  + 'Open: ' + this.open + '<br>'
                  + 'High: ' + this.high + '<br>'
-                 + 'Mid: ' + numFormatter.format((this.high + this.low)/2) + '<br>'
+                 + 'Mid: ' + round((this.high + this.low) / 2) + '<br>'
                  + 'Low: ' + this.low + '<br>'
                  + 'Close: ' + this.close + '<br>';
           }
-        } 
+        },
+        id: 'ohlcseries'
       }, 
       {
         name: 'Vol',
         type: 'column',
         data: [],
         yAxis: 1,
-        dataGrouping: { units: groupingUnits }
+      },
+      {
+        name: 'Events',
+        type: 'flags',
+        data: [],
+        onSeries: 'ohlcseries',
+        shape: 'circlepin',
+        width: 16
       }
     ]
-  } /* as Highcharts.Options */
+  }
 
 
 
-  constructor(private data: DataService, auth: AuthService) {    
-    this.saveChartInstance = this.saveChartInstance.bind(this);
+  constructor(private data: DataService, private events: EventsService) { 
+    this.saveChartInstance = this.saveChartInstance.bind(this);   
     const updateOptions = this.updateOptions.bind(this);
-    this.updateOptions(false);
+    updateOptions(false);
 
+    // trigger chart updates from user selections, or when new data becomes available
     this.chartType.valueChanges.subscribe(updateOptions);
     this.ticker.valueChanges.subscribe(updateOptions);
-    this.data.loadingChanges.pipe(filter(l => !l)).subscribe(updateOptions);
+    this.data.loadedEvents.subscribe(updateOptions);
   }
 
   updateOptions(ignoreRange = true) {    
-    const tickerData = this.data.getTicker(this.ticker.value);    
+    const tickerData = this.data.getTicker(this.ticker.value),
+          o = this.options;   
 
     // don't mess with this after initial render
-    if (ignoreRange)
-      delete this.options.rangeSelector.selected;
+    if (ignoreRange) delete o.rangeSelector.selected;
 
-    this.options.title.text = tickerData.name;
+    o.title.text = tickerData.name;
 
-    this.options.series[0].name = this.ticker.value;
-    this.options.series[0].data = tickerData.ohlc;
-    this.options.series[0].type = this.chartType.value;
+    o.series[0].name = this.ticker.value;
+    o.series[0].type = this.chartType.value;
+    o.series[0].data = tickerData.ohlc;
 
-    this.options.series[1].data = tickerData.volume;
+    o.series[1].data = tickerData.volume;
+
+    o.series[2].data = this.events.getEventsData();
 
     // create moving average series dynamically
-    this.options.series.splice(2); // remove existing dynamic series first
-    for (let period of movingAveragePeriods) {
-      this.options.series.push({
+    o.series.splice(3); // remove existing dynamic series first
+    for (let period of MOVING_AVERAGE_PERIODS) {
+      o.series.push({
         name: `${period}d MA`,
         data: tickerData.moving[period]
       });
-    }
-
-    console.log(this.options);
-    
+    }    
 
     this.updateChart = true;
+
+    if (this.chart) {
+      if (tickerData.loading) {
+        this.chart.showLoading();
+      } else {
+        this.chart.hideLoading();
+      }
+    }
   }
 
-  saveChartInstance(chart: Highcharts.Chart) {
-    // eval('window.chart = chart');
+  saveChartInstance(chart) {
+    this.chart = chart;
+    chart.showLoading();
+    eval('window.chart = chart');
   }
 
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

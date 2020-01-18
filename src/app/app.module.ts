@@ -21,9 +21,12 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatCardModule} from '@angular/material/card';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectModule} from '@angular/material/select';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+
 
 
 import { HighchartsChartModule } from 'highcharts-angular';
+import { FooterComponent } from './components/footer/footer.component';
 
 
 
@@ -32,7 +35,8 @@ import { HighchartsChartModule } from 'highcharts-angular';
     AppComponent,
     AuthComponent,
     MainComponent,
-    HeaderComponent
+    HeaderComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
@@ -47,6 +51,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
     MatCardModule,
     MatRadioModule,
     MatSelectModule,
+    MatProgressSpinnerModule,
     FormsModule,
     ReactiveFormsModule,
     HighchartsChartModule,

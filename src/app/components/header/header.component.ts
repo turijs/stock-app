@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
+import { DataService } from 'src/app/services/data.service';
+import {dateFormat} from 'highcharts/highstock';
 
 @Component({
   selector: 'app-header',
@@ -8,5 +10,11 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class HeaderComponent {
 
-  constructor(public auth: AuthService) { }
+  constructor(public auth: AuthService, public data: DataService) { }
+
+  getLastUpdated() {
+    const date = this.data.endDate;
+
+    return date > 0 ? dateFormat('%m/%d/%y', date) : '';
+  }
 }

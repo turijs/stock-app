@@ -1,10 +1,14 @@
 <mat-toolbar>
-  <h1>Stocks</h1>
+  <h1>StockApp</h1>
 
   <div class="header__flex-space"></div>
 
   <div *ngIf="auth.isLoggedIn" class="header__data">
-    Data last updated: 1/4/20
+    Data Updated: {{getLastUpdated()}}
+    <button mat-button [disabled]="data.isLoading" (click)="data.updateDataFake()">
+      {{ data.isLoading ? 'Loading' : 'Update' }}
+    </button>
+    <mat-progress-spinner *ngIf="data.isLoading" [value]="data.progress" diameter="15" ></mat-progress-spinner>
   </div>
 
   <div class="header__flex-space"></div>
