@@ -1,5 +1,7 @@
 # StockApp
 
+Toy app for viewing historical stock data from Quandl API. Built with Angular and Highcharts.
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.22.
 
 ## Development server
