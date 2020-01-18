@@ -17,8 +17,8 @@ export enum LoginEventTypes {
   providedIn: 'root'
 })
 export class AuthService {
-  users: User[]
-  currentUser: User | null
+  private users: User[]
+  private currentUser: User | null
   loginEvents: Subject<LoginEventTypes> = new Subject();
 
   constructor(private router: Router) {

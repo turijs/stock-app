@@ -1,13 +1,12 @@
 <div class="display-options">
   <mat-form-field>
-    <mat-select [formControl]="ticker">
+    <mat-select [formControl]="ticker" aria-label="Select a ticker">
       <mat-option *ngFor="let t of tickers" [value]="t">{{t}}</mat-option>
     </mat-select>
   </mat-form-field>
 
   <mat-radio-group [formControl]="chartType" aria-label="Select a chart type">
-    <mat-radio-button value="ohlc">OHLC</mat-radio-button>
-    <mat-radio-button style="margin-left: 20px" value="candlestick">Candlestick</mat-radio-button>
+    <mat-radio-button *ngFor="let type of chartTypes | keyvalue" [value]="type.key">{{type.value}}</mat-radio-button>
   </mat-radio-group>
 </div>
 

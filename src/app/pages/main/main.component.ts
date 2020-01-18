@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import * as Highcharts from 'highcharts/highstock';
-import { DataService, MOVING_AVERAGE_PERIODS } from 'src/app/services/data.service';
-import {TICKERS} from 'src/app/services/data.service';
 import { FormControl } from '@angular/forms';
+import * as Highcharts from 'highcharts/highstock';
+import { DataService, TICKERS, MOVING_AVERAGE_PERIODS } from 'src/app/services/data.service';
 import { EventsService } from 'src/app/services/events.service';
 import { round } from 'src/app/util';
-import { exec } from 'child_process';
 
 @Component({
   selector: 'app-main',
@@ -13,13 +11,11 @@ import { exec } from 'child_process';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent implements OnInit {
-  nuts: string
   chart: Highcharts.Chart
   chartType = new FormControl('ohlc')
   chartTypes = {ohlc: 'OHLC', candlestick: 'Candlestick'}
   ticker = new FormControl(TICKERS[0])
   tickers = TICKERS
-  selectedRange = 0
 
   Highcharts = Highcharts
   updateChart = false
@@ -129,8 +125,6 @@ export class MainComponent implements OnInit {
     ]
   }
 
-
-
   constructor(private data: DataService, private events: EventsService) { 
     this.saveChartInstance = this.saveChartInstance.bind(this);   
     const updateOptions = this.updateOptions.bind(this);
@@ -146,7 +140,7 @@ export class MainComponent implements OnInit {
     const tickerData = this.data.getTicker(this.ticker.value),
           o = this.options;   
 
-    // don't mess with this after initial render
+    // don't mess with selected range after initial render
     if (ignoreRange) delete o.rangeSelector.selected;
 
     o.title.text = tickerData.name;
@@ -182,7 +176,6 @@ export class MainComponent implements OnInit {
   saveChartInstance(chart) {
     this.chart = chart;
     chart.showLoading();
-    eval('window.chart = chart');
   }
 
   ngOnInit() {}

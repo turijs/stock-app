@@ -42,7 +42,6 @@ for (let t = Date.UTC(2018, 2, 27), i = 0; i < 1000; i++, t -= 1000 * 60 * 60 * 
   defaultTickerData.volume.unshift([t, 100, 150, 50, 100]);
 }
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -91,7 +90,7 @@ export class DataService {
     const processNext = () => {
       let ticker = TICKERS[tickerIndex++];
       this.http.get(`${API_BASE}/${ticker}.json?api_key=${apiKey}&order=asc`)
-        .subscribe(processResponse.bind({}, ticker));
+        .subscribe(processResponse.bind({}, ticker), () => console.error(`Error retrieving data for ${ticker}`));
     }
 
     // start two requests in parallel
@@ -99,6 +98,9 @@ export class DataService {
     processNext();
   }
 
+  /*
+   * Extract relevant information from Quandl API response, convert date strings to timestamps
+   */
   processRawData(responseData: any) {
     const name = responseData.dataset.name, ohlc = [], volume = [];
 
@@ -129,8 +131,8 @@ export class DataService {
 
         if (i >= period - 1) {
           movingAverageData[period].push([
-            ohlc[i][0], // date
-            Math.round(movingSums[period] / period * 1000) / 1000
+            ohlc[i][0], // timestamp
+            round(movingSums[period] / period)
           ]);
         }
       }

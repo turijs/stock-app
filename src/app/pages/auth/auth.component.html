@@ -8,7 +8,7 @@
         <input matInput formControlName="password" placeholder="Password*" type="password">
       </mat-form-field>
 
-      <button mat-flat-button color="primary" [disabled]="!loginForm.valid">Sign Up</button>
+      <button mat-flat-button color="primary" [disabled]="!loginForm.valid">Login</button>
 
       <mat-card *ngIf="loginError"><mat-error>{{loginError}}</mat-error></mat-card>
     </form>

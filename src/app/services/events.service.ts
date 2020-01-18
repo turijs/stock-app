@@ -6,11 +6,14 @@ import { randomInRange } from 'src/app/util';
   providedIn: 'root'
 })
 export class EventsService {
-  lastEndDate: number = 0
+  private lastEndDate: number = 0
   private eventsData = []
 
   constructor(private data: DataService) { }
 
+  /*
+   * Get some randomly generated events in the last month of available data 
+   */
   getEventsData() {
     const endDate = this.data.endDate;
 
